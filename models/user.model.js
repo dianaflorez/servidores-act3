@@ -27,6 +27,10 @@ const userSchema = new Schema({
         type: Boolean,
         default: false 
     },
+    accessToken: {
+        type: String,
+        required: true,
+    }
 }, {
     timestamps: true, // por defecto created_at y updated_at
     toJSON: {
@@ -34,8 +38,9 @@ const userSchema = new Schema({
             ret.id = doc._id;
             delete ret._id;
             delete ret.__v;
-            // delete ret.password; 
-    
+            delete ret.password; 
+            delete ret.accessToken;
+
             return ret
         }
     },
@@ -55,6 +60,7 @@ userSchema.pre('save', function (next) {
 userSchema.methods.checkPassword = function (passwordToCheck) {
     return bcrypt.compare(passwordToCheck, this.password);
 };
+
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;

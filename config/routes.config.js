@@ -8,17 +8,16 @@ const { checkAuth } = require("../middlewares/auth.middlewares");
 //   res.send("hola");
 // });
 
-
-// router.use(checkAuth); // tomaría para todo
 // users CRUD
 router.post("/users", users.create);
-router.get("/users", checkAuth, users.list);
+router.get("/users", users.list);
 router.get("/users/:id", checkAuth, users.detail);
 router.patch("/users/:id", checkAuth, users.update); // patch solo partes
 // router.put("/users/:id", users.update); // put reemplazar todo
 router.delete("/users/:id", checkAuth, users.delete);
 
 router.post("/login", users.login);
+router.get("/activateAccount", users.activateAccount);
 
 router.use(checkAuth); // tomaría para todo hacia abajo
 // posts CRUD

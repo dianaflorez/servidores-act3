@@ -30,14 +30,60 @@ module.exports.create = async (req, res) => {
     return res.status(400).json({ message: 'El correo electrónico ya está registrado' });
   }
 
-  User.create(req.body)
+  const accessToken = jwt.sign({ email }, process.env.JWT_SECRET);
+
+  const newUser = await User.create({
+      name,
+      email,
+      password,
+      bio,
+      accessToken: accessToken
+    })
     .then((user) => {
-      res.json(user);
+      console.log('Access Token:', accessToken);
+      res.status(201).json(user);
     })
     .catch((err) => {
       res.status(400).json(err);
     });
+
+  // User.create(req.body)
+  //   .then((user) => {
+  //     res.json(user);
+  //   })
+  //   .catch((err) => {
+  //     res.status(400).json(err);
+  //   });
 };
+
+module.exports.activateAccount = async (req, res) => {
+  try {
+    const { email, accessToken } = req.query;
+
+    // Buscar el usuario por su correo electrónico
+    const user = await User.findOne({ email });
+    
+    console.log(email);
+    console.log(user.accessToken);
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Comparar el token enviado con el almacenado en la base de datos
+    if (accessToken !== user.accessToken) {
+      return res.status(403).json({ message: 'El token de acceso no es válido' });
+    }
+
+    // Actualizar el campo active a true
+    await User.findOneAndUpdate({ email }, { active: true });
+
+    res.status(200).json({ message: 'Cuenta activada correctamente' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
 
 module.exports.update = (req, res) => {
   User.findByIdAndUpdate(req.params.id, req.body, {
@@ -73,6 +119,10 @@ module.exports.login = async (req, res) => {
   const user = await User.findOne({ email }).catch(console.error);
   if (!user) {
     return res.status(404).json({ message: 'Usuario not fond' });
+  }
+
+  if (!user.active) {
+    return res.status(403).json({ message: 'La cuenta no está activa. Por favor, activa tu cuenta para poder iniciar sesión.' });
   }
 
   // Verificar la contraseña utilizando el método checkPassword definido en el esquema de usuario
