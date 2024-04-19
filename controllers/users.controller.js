@@ -83,12 +83,12 @@ module.exports.login = async (req, res) => {
 
   const token = jwt.sign({
       sub: user.id,
-      exp: Date.now() / 1000 + 70,
+      exp: Date.now() / 1000 + 240,
     }, 
     process.env.JWT_SECRET // 'super secret'
   );
 
-  res.json({token});  
+  res.status(200).json({token});  
 };
 
 module.exports.logout = (req, res, next) => {
